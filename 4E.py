@@ -33,9 +33,7 @@ async def mute(ctx,member:discord.Member):
     await asyncio.sleep(1800)
     await member.remove_roles(mute)
 
-
-
-
+token = os.environ.get('BOT_TOKEN')
 
 
 
