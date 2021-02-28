@@ -2,6 +2,7 @@ import discord # импортируем Дискорд
 from discord.ext import commands
 from discord import Intents
 import asyncio
+import os
 intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix = "!",intents = intents)    # ! это вызов бота
