@@ -165,7 +165,7 @@ async def on_raw_reaction_add(playload):
 
 
 
-token = os.environ_get('BOT_TOKEN') 
+token = os.environ.get('BOT_TOKEN') 
 
 
 
