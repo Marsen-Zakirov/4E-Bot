@@ -23,6 +23,62 @@ async def on_member_join(member:discord.Member):
     embed = discord.Embed(description=f"Привет {member.mention}, добро пожаловать в наш сервер" , color=0x0bf9f9 )
     await member.add_roles(role)
     await channel.send(embed = embed)
+@bot.event
+async def on_raw_reaction_add(playload):
+    message_id = playload.message_id
+    if message_id == 816300677394595860:
+        guild_id = playload.guild_id
+        guild = discord.utils.find(lambda g : g.id == guild_id, bot.guilds)
+        if playload.emoji.name == 'csgo':
+            role = discord.utils.get(guild.roles,name = 'Counter-Strike: Global Offensive')
+        elif playload.emoji.name == 'dota':
+            role = discord.utils.get(guild.roles,name = 'Dota 2')
+        elif playload.emoji.name == 'PUBG':
+            role = discord.utils.get(guild.roles,name = 'PUBG')
+        elif playload.emoji.name == 'GTA':
+            role = discord.utils.get(guild.roles,name = 'GTA')
+        elif playload.emoji.name == 'rust':
+            role = discord.utils.get(guild.roles,name = 'Rust')
+        elif playload.emoji.name == 'minecraft':
+            role = discord.utils.get(guild.roles,name = 'Minecraft')
+        else:
+            role = discord.utils.get(guild.roles, name=playload.emoji.name)
+        if role is not None:
+            member = discord.utils.find(lambda  m : m.id == playload.user_id, guild.members)
+            if member is not None:
+                await member.add_roles(role)
+            else:
+                print('Пользователь не найден')
+        else:
+            print('Роль не найден')
+@bot.event
+async def on_raw_reaction_remove(playload):
+    message_id = playload.message_id
+    if message_id == 816300677394595860:
+        guild_id = playload.guild_id
+        guild = discord.utils.find(lambda g : g.id == guild_id, bot.guilds)
+        if playload.emoji.name == 'csgo':
+            role = discord.utils.get(guild.roles,name = 'Counter-Strike: Global Offensive')
+        elif playload.emoji.name == 'dota':
+            role = discord.utils.get(guild.roles,name = 'Dota 2')
+        elif playload.emoji.name == 'PUBG':
+            role = discord.utils.get(guild.roles,name = 'PUBG')
+        elif playload.emoji.name == 'GTA':
+            role = discord.utils.get(guild.roles,name = 'GTA')
+        elif playload.emoji.name == 'rust':
+            role = discord.utils.get(guild.roles,name = 'Rust')
+        elif playload.emoji.name == 'minecraft':
+            role = discord.utils.get(guild.roles,name = 'Minecraft')
+        else:
+            role = discord.utils.get(guild.roles, name=playload.emoji.name)
+        if role is not None:
+            member = discord.utils.find(lambda  m : m.id == playload.user_id, guild.members)
+            if member is not None:
+                await member.remove_roles(role)
+            else:
+                print('Пользователь не найден')
+        else:
+            print('Роль не найден')
 @bot.command() # кик игроков
 @commands.has_permissions(administrator = True)
 async def kick (ctx,member:discord.Member,*,reason = None):
@@ -112,7 +168,7 @@ async def __award(ctx,member:discord.Member = None,amount:int=None):
             cursor.execute("UPDATE users SET cash = cash + {} WHERE id = {}".format(amount,member.id))
             connection.commit()
             await ctx.message.add_reaction('✅')
-        await ctx.send(embed=discord.Embed(description=f"""**{member}**, поздравляем, вас наградили, в настоящее время ваш баланс составляет **{cursor.execute("SELECT cash FROM users WHERE id = {}".format(ctx.author.id)).fetchone()[0]}  :moneybag:**"""))
+        await ctx.send(embed=discord.Embed(description=f"""**{member}**, поздравляем, вас наградили, в настоящее время ваш баланс составляет **{cursor.execute("SELECT cash FROM users WHERE id = {}".format(member.id)).fetchone()[0]}  :moneybag:**"""))
 @bot.command(aliases = ['collect']) #отбирать деньги
 async def __colect(ctx,member:discord.Member = None, amount = None):
     if member is None:
@@ -121,6 +177,8 @@ async def __colect(ctx,member:discord.Member = None, amount = None):
         if amount == 'all':
             cursor.execute("UPDATE users SET cash = {} WHERE id = {}".format(0, member.id))
             connection.commit()
+            await ctx.send(embed=discord.Embed(
+                description=f"""**{member}**, к сожалению у вас забрали все деньги 😭"""))
             await ctx.message.add_reaction('✅')
         elif amount is None:
             await ctx.send(f"**{ctx.author}**, Вы забыли указать сумму")
@@ -130,44 +188,13 @@ async def __colect(ctx,member:discord.Member = None, amount = None):
             cursor.execute("UPDATE users SET cash = cash - {} WHERE id = {}".format(int(amount),member.id))
             connection.commit()
             await ctx.message.add_reaction('✅')
-            await ctx.send(embed=discord.Embed(description=f"""**{member}**, к сожалению у вас забрали деньги, в настоящее время ваш баланс составляет **{cursor.execute("SELECT cash FROM users WHERE id = {}".format(ctx.author.id)).fetchone()[0]}  :moneybag:**"""))
-
-
-@bot.event
-async def on_raw_reaction_add(playload):
-    message_id = playload.message_id
-    if message_id == 816300677394595860:
-        guild_id = playload.guild_id
-        guild = discord.utils.find(lambda g : g.id == guild_id, bot.guilds)
-        if playload.emoji.name == 'csgo':
-            role = discord.utils.get(guild.roles,name = 'Counter-Strike: Global Offensive')
-        elif playload.emoji.name == 'dota':
-            role = discord.utils.get(guild.roles,name = 'Dota 2')
-        elif playload.emoji.name == 'PUBG':
-            role = discord.utils.get(guild.roles,name = 'PUBG')
-        elif playload.emoji.name == 'GTA':
-            role = discord.utils.get(guild.roles,name = 'GTA')
-        elif playload.emoji.name == 'rust':
-            role = discord.utils.get(guild.roles,name = 'Rust')
-        elif playload.emoji.name == 'minecraft':
-            role = discord.utils.get(guild.roles,name = 'Minecraft')
-        else:
-            role = discord.utils.get(guild.roles, name=playload.emoji.name)
-        if role is not None:
-            member = discord.utils.find(lambda  m : m.id == playload.user_id, guild.members)
-            if member is not None:
-                await member.add_roles(role)
-            else:
-                print('Пользователь не найден')
-        else:
-            print('Роль не найден')
+            await ctx.send(embed=discord.Embed(description=f"""**{member}**, к сожалению у вас забрали деньги, в настоящее время ваш баланс составляет **{cursor.execute("SELECT cash FROM users WHERE id = {}".format(member.id)).fetchone()[0]}  :moneybag:**"""))
 
 
 
 
-token = os.environ.get('BOT_TOKEN') 
 
-
+token = os.environ.get('BOT_TOKEN')
 
 
 
