@@ -1,7 +1,5 @@
 import discord # импортируем Дискорд
-from PIL import Image,ImageDraw,ImageFont
 from discord.ext import commands
-from discord import Intents
 import os
 from time import sleep
 import requests
@@ -9,20 +7,23 @@ from PIL import Image, ImageFont, ImageDraw
 import io
 import asyncio
 import sqlite3
-token = 'ODE1MjIzOTgyMzg3MTAxNjk2.YDpSfw.Hi2xD-KMG5NF8zUnoFXiQkBXvMM' #Это токен
-intents = discord.Intents.default()
-intents.members = True
-bot = commands.Bot(command_prefix = "!",intents = intents)    # ! это вызов бота
+bot = commands.Bot(command_prefix = "!", intents = discord.Intents.all())
 @bot.event            # Проверка запуска бота
 async def on_ready():
-    print('4E')
-@bot.event # Выдача роли Участник, и приветсвие игроков
-async def on_member_join(member:discord.Member):
-    role = discord.utils.get(member.guild.roles, name = 'Участник')
-    channel = bot.get_channel(815555356662956032)
-    embed = discord.Embed(description=f"Привет {member.mention}, добро пожаловать в наш сервер" , color=0x0bf9f9 )
-    await member.add_roles(role)
-    await channel.send(embed = embed)
+    print('Бот готов к работе')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS users (
+        name TEXT,
+        id INT ,
+        cash BIGINT,
+        lvl INT 
+    )''')
+    for guild in bot.guilds:
+        for member in guild.members:
+            if cursor.execute(f"SELECT id FROM users WHERE id = {member.id}").fetchone() is None:
+                cursor.execute(f"INSERT INTO users VALUES ('{member}', {member.id}, 0, 1)")
+            else:
+                pass
+    connection.commit()
 @bot.event
 async def on_raw_reaction_add(playload):
     message_id = playload.message_id
@@ -123,22 +124,6 @@ async def card_user(ctx):
     await ctx.send(file=discord.File(fp='user_card.png')) # #      ##
 connection = sqlite3.connect('server,db')
 cursor = connection.cursor()
-@bot.event # база данных пользователей
-async def on_ready():
-    cursor.execute('''CREATE TABLE IF NOT EXISTS users (
-        name TEXT,
-        id INT ,
-        cash BIGINT,
-        lvl INT 
-    )''')
-    for guild in bot.guilds:
-        for member in guild.members:
-            if cursor.execute(f"SELECT id FROM users WHERE id = {member.id}").fetchone() is None:
-                cursor.execute(f"INSERT INTO users VALUES ('{member}', {member.id}, 0, 1)")
-            else:
-                pass
-    connection.commit()
-    print('client connected')
 @bot.event # дополнение к базам данных
 async  def on_member_join(member):
     if cursor.execute(f"SELECT id FROM users WHERE id = {member.id}").fetchone() is None:
@@ -146,7 +131,12 @@ async  def on_member_join(member):
         connection.commit()
     else:
         pass
-
+    role = discord.utils.get(member.guild.roles, name = 'Участник')
+    channel = bot.get_channel(815555356662956032)
+    embed = discord.Embed(description=f"Привет {member.mention}, добро пожаловать в наш сервер" , color=0x0bf9f9 )
+    await member.add_roles(role)
+    await channel.send(embed = embed)
+    print('Member joined')
 @bot.command(aliases = ['balance','cash','money']) # проверка баланса
 async def __balance(ctx,member:discord.Member = None):
     if member is None:
@@ -168,7 +158,7 @@ async def __award(ctx,member:discord.Member = None,amount:int=None):
             cursor.execute("UPDATE users SET cash = cash + {} WHERE id = {}".format(amount,member.id))
             connection.commit()
             await ctx.message.add_reaction('✅')
-            await ctx.send(embed=discord.Embed(description=f"""**{member}**, поздравляем, вас наградили, в настоящее время ваш баланс составляет **{cursor.execute("SELECT cash FROM users WHERE id = {}".format(member.id)).fetchone()[0]}  :moneybag:**"""))
+        await ctx.send(embed=discord.Embed(description=f"""**{member}**, поздравляем, вас наградили, в настоящее время ваш баланс составляет **{cursor.execute("SELECT cash FROM users WHERE id = {}".format(member.id)).fetchone()[0]}  :moneybag:**"""))
 @bot.command(aliases = ['collect']) #отбирать деньги
 async def __colect(ctx,member:discord.Member = None, amount = None):
     if member is None:
