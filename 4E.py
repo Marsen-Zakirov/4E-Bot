@@ -168,7 +168,7 @@ async def __award(ctx,member:discord.Member = None,amount:int=None):
             cursor.execute("UPDATE users SET cash = cash + {} WHERE id = {}".format(amount,member.id))
             connection.commit()
             await ctx.message.add_reaction('✅')
-        await ctx.send(embed=discord.Embed(description=f"""**{member}**, поздравляем, вас наградили, в настоящее время ваш баланс составляет **{cursor.execute("SELECT cash FROM users WHERE id = {}".format(member.id)).fetchone()[0]}  :moneybag:**"""))
+            await ctx.send(embed=discord.Embed(description=f"""**{member}**, поздравляем, вас наградили, в настоящее время ваш баланс составляет **{cursor.execute("SELECT cash FROM users WHERE id = {}".format(member.id)).fetchone()[0]}  :moneybag:**"""))
 @bot.command(aliases = ['collect']) #отбирать деньги
 async def __colect(ctx,member:discord.Member = None, amount = None):
     if member is None:
